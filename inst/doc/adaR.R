@@ -1,4 +1,4 @@
-## ---- include = FALSE---------------------------------------------------------
+## ----include = FALSE----------------------------------------------------------
 knitr::opts_chunk$set(
     collapse = TRUE,
     comment = "#>"
@@ -51,6 +51,15 @@ ada_get_hostname(corner_cases)
 
 ## ----ada_has------------------------------------------------------------------
 ada_has_search(corner_cases)
+
+## ----ada_set------------------------------------------------------------------
+ada_set_hostname("https://example.de/test", "example.com")
+
+## ----ada_clear----------------------------------------------------------------
+url <- "https://user_1:password_1@example.org:8080/dir/../api?q=1#frag"
+ada_clear_port(url)
+ada_clear_hash(url)
+ada_clear_search(url)
 
 ## ----public_suffix------------------------------------------------------------
 urls <- c(

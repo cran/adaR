@@ -1,6 +1,6 @@
 Package: adaR
 Title: A Fast 'WHATWG' Compliant URL Parser
-Version: 0.2.0
+Version: 0.3.0
 Authors@R: 
     c(person("David", "Schoch", , "david@schochastics.net", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-2952-4812")),
@@ -23,7 +23,7 @@ Config/testthat/edition: 3
 Depends: R (>= 4.2)
 VignetteBuilder: knitr
 NeedsCompilation: yes
-Packaged: 2023-09-29 14:25:36 UTC; david
+Packaged: 2023-10-16 20:02:07 UTC; david
 Author: David Schoch [aut, cre] (<https://orcid.org/0000-0003-2952-4812>),
   Chung-hong Chan [aut] (<https://orcid.org/0000-0002-6232-7530>),
   Yagiz Nizipli [ctb, cph] (author of ada-url :
@@ -32,4 +32,4 @@ Author: David Schoch [aut, cre] (<https://orcid.org/0000-0003-2952-4812>),
     <https://github.com/ada-url/ada>)
 Maintainer: David Schoch <david@schochastics.net>
 Repository: CRAN
-Date/Publication: 2023-10-01 15:30:05 UTC
+Date/Publication: 2023-10-16 20:30:02 UTC

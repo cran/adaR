@@ -8,6 +8,12 @@
 [![R-CMD-check](https://github.com/schochastics/adaR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/schochastics/adaR/actions/workflows/R-CMD-check.yaml)
 [![CRAN
 status](https://www.r-pkg.org/badges/version/adaR)](https://CRAN.R-project.org/package=adaR)
+[![CRAN
+Downloads](http://cranlogs.r-pkg.org/badges/adaR)](https://CRAN.R-project.org/package=adaR)
+[![Codecov test
+coverage](https://codecov.io/gh/schochastics/adaR/branch/main/graph/badge.svg)](https://app.codecov.io/gh/schochastics/adaR?branch=main)
+[![ada-url
+Version](https://img.shields.io/badge/ada_url-2.7.0-blue)](https://github.com/ada-url/ada)
 <!-- badges: end -->
 
 adaR is a wrapper for [ada-url](https://github.com/ada-url/ada), a
@@ -16,20 +22,20 @@ URL parser written in modern C++ .
 
 It implements several auxilliary functions to work with urls:
 
-- public suffix extraction (top level domain excluding private domains)
-  like [psl](https://github.com/hrbrmstr/psl)
-- fast c++ implementation of `utils::URLdecode` (~40x speedup)
+-   public suffix extraction (top level domain excluding private
+    domains) like [psl](https://github.com/hrbrmstr/psl)
+-   fast c++ implementation of `utils::URLdecode` (\~40x speedup)
 
 More general information on URL parsing can be found in the introductory
 vignette via `vignette("adaR")`.
 
 `adaR` is part of a series of R packages to analyse webtracking data:
 
-- [webtrackR](https://github.com/schochastics/webtrackR): preprocess raw
-  webtracking data
-- [domainator](https://github.com/schochastics/domainator): classify
-  domains
-- [adaR](https://github.com/schochastics/adaR): parse urls
+-   [webtrackR](https://github.com/schochastics/webtrackR): preprocess
+    raw webtracking data
+-   [domainator](https://github.com/schochastics/domainator): classify
+    domains
+-   [adaR](https://github.com/schochastics/adaR): parse urls
 
 ## Installation
 
@@ -102,7 +108,7 @@ ada_url_parse("https://www.google.com/maps/place/Pennsylvania+Station/@40.751984
 
 A “raw” url parse using ada is extremely fast (see
 [ada-url.com](https://www.ada-url.com/)) but for this to carry over to R
-is tricky. The performance is still very compatible with
+is tricky. The performance is still compatible with
 `urltools::url_parse` with the noted advantage in accuracy in some
 practical circumstances.
 
@@ -115,11 +121,19 @@ bench::mark(
 #> # A tibble: 2 × 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 ada           469µs    469µs     2132.    2.49KB        0
-#> 2 urltools      407µs    407µs     2457.    2.49KB        0
+#> 1 ada           592µs    592µs     1689.    2.49KB        0
+#> 2 urltools      597µs    597µs     1675.    2.49KB        0
 ```
 
 For further benchmark results, see `benchmark.md` in `data_raw`.
+
+There are four more groups of functions available to work with url
+parsing:
+
+-   `ada_get_*()` get a specific component
+-   `ada_has_*()` check if a specific component is present
+-   `ada_set_*()` set a specific component from URLS
+-   `ada_clear_*()` remove a specific component from URLS
 
 ## Public Suffix extraction
 

@@ -2,11 +2,7 @@
     if (is.null(url)) {
         return(character(0))
     }
-    out <- func(url)
-    if (isTRUE(decode)) {
-        return(url_decode2(out))
-    }
-    return(out)
+    func(url, decode)
 }
 
 #' Get a specific component of URL
@@ -27,6 +23,7 @@
 #' ada_get_search(url)
 #' ada_get_protocol(url)
 #' ada_get_domain(url)
+#' ada_get_basename(url)
 #' ## these functions are vectorized
 #' urls <- c("http://www.google.com", "http://www.google.com:80", "noturl")
 #' ada_get_port(urls)
@@ -110,5 +107,24 @@ R_ada_get_domain <- function(url) {
 #' @rdname ada_get_href
 #' @export
 ada_get_domain <- function(url, decode = TRUE) {
-    .get(url, decode, R_ada_get_domain)
+    if (is.null(url)) {
+        return(character(0))
+    }
+    res <- R_ada_get_domain(url)
+    if (decode) {
+        return(url_decode2(res))
+    }
+    return(res)
+}
+
+#' @rdname ada_get_href
+#' @export
+ada_get_basename <- function(url) {
+    protocol <- ada_get_protocol(url)
+    not_na <- !is.na(protocol)
+    tmp <- protocol[not_na]
+    host <- ada_get_hostname(url[not_na])
+    basename <- rep(NA_character_, length(url))
+    basename[not_na] <- paste0(tmp, "//", host)
+    basename
 }

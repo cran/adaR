@@ -1,7 +1,7 @@
-750dc69512817c5f73b7f7c7fae94a16 *DESCRIPTION
+4f92199d78bec90044da64364dbb4ce8 *DESCRIPTION
 8e8152565c41d5843c3299d223267de7 *LICENSE
 c838517d2736aef7470114d9ff115111 *NAMESPACE
-653a9f29b48de2360fc31c75b9820788 *NEWS.md
+a13a069c78bd18214d81cc6962351582 *NEWS.md
 e2f27bd412373531f8abfed6ef69dd04 *R/RcppExports.R
 2a434410c52f2240352a67f71e8ae0c2 *R/ada-package.R
 d80391cb810401e3e64e091d179d01e7 *R/clear.R
@@ -12,7 +12,7 @@ d80391cb810401e3e64e091d179d01e7 *R/clear.R
 b28ec084fe2b4aa333dee6daafed3462 *R/set.R
 e8f8c6449a7f63f91aa7cc04aacbd809 *R/sysdata.rda
 8b84aa552bdb1b020614dc20978eb0c4 *R/zzz.R
-8b9875447690b474770178c7f23d08b9 *README.md
+a1b2aa2ac87a6bc726b4e806287f7306 *README.md
 c6423d5dccb19c93cb9ff37bce5eeefa *build/vignette.rds
 e04edae7e4360ef5e1362b225b3bee2a *inst/doc/adaR.R
 e90c9a43dfb4d37a804283d013f938d2 *inst/doc/adaR.Rmd
@@ -27,8 +27,8 @@ b0395db4f437038b951ab2b6d35f6926 *man/public_suffix.Rd
 d010030f4ad4de93959e4ab8122dc6bc *man/url_decode2.Rd
 f5fd36f06a4578c3507e7474eede87c3 *src/Makevars
 94d1e2b098ace843bc461793d791d9d3 *src/RcppExports.cpp
-51d617d8a81da1216956e3eba9963ad2 *src/ada/ada.cpp
-579d073f6f554d32f7a728ebe60fed02 *src/ada/ada.h
+e39a424b95135c527c6dfe6b0dbbc4dc *src/ada/ada.cpp
+4ffa2b44a030cf1a6d209c564eefea5e *src/ada/ada.h
 31040f4c2bff68e5ac5f53f482faba17 *src/ada/ada_c.h
 38dd28507ae26cc81da8c60a40759e2b *src/adaR.cpp
 85e623b5f7d392d8c28ac00210bdfe34 *src/adaR.h

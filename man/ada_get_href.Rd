@@ -35,14 +35,18 @@ ada_get_search(url, decode = TRUE)
 
 ada_get_protocol(url, decode = TRUE)
 
-ada_get_domain(url, decode = TRUE)
+ada_get_domain(url, decode = TRUE, icann_only = FALSE)
 
-ada_get_basename(url)
+ada_get_basename(url, decode = TRUE)
 }
 \arguments{
 \item{url}{character. one or more URL to be parsed}
 
-\item{decode}{logical. Whether to decode the output (see \code{\link[utils:URLencode]{utils::URLdecode()}}), default to \code{TRUE}}
+\item{decode}{logical. Whether to decode the output (see \code{\link[utils:URLdecode]{utils::URLdecode()}}), default to \code{TRUE}}
+
+\item{icann_only}{logical. Whether to use only the ICANN section of the
+public suffix list, ignoring privately registered suffixes such as
+\code{github.io} or \code{blogspot.com}. Defaults to \code{FALSE}.}
 }
 \value{
 character, \code{NA} if not a valid URL
@@ -64,6 +68,9 @@ ada_get_search(url)
 ada_get_protocol(url)
 ada_get_domain(url)
 ada_get_basename(url)
+## privately registered suffixes count by default
+ada_get_domain("https://foo.github.io/page")
+ada_get_domain("https://foo.github.io/page", icann_only = TRUE)
 ## these functions are vectorized
 urls <- c("http://www.google.com", "http://www.google.com:80", "noturl")
 ada_get_port(urls)

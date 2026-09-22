@@ -6,14 +6,23 @@ test_that("public_suffix works on some examples", {
     )
     ps <- public_suffix(urls)
     expect_equal(ps[1], "co.uk")
-    expect_equal(ps[2], "gov.uk")
+    # api.gov.uk is a privately registered suffix, included by default
+    expect_equal(ps[2], "api.gov.uk")
+    expect_equal(public_suffix(urls[2], icann_only = TRUE), "gov.uk")
     expect_equal(ps[3], "butthisispartoftheps.kawasaki.jp")
 })
 
-test_that("public suffix works on complete list", {
-    urls <- paste0("https://dontmatchme.", setdiff(psl$raw_list, psl$wildcard))
-    psla <- public_suffix(urls)
-    expect_true(all(psla == setdiff(psl$raw_list, psl$wildcard)))
+test_that("public suffix works on the complete ICANN list", {
+    rules <- setdiff(psl$icann$raw_list, psl$icann$wildcard)
+    urls <- paste0("https://dontmatchme.", rules)
+    expect_equal(public_suffix(urls, icann_only = TRUE), rules)
+    expect_equal(public_suffix(urls), rules)
+})
+
+test_that("public suffix works on the complete private list", {
+    rules <- setdiff(psl$private$raw_list, psl$private$wildcard)
+    urls <- paste0("https://dontmatchme.", rules)
+    expect_equal(public_suffix(urls), rules)
 })
 
 test_that("corners", {
@@ -36,4 +45,110 @@ test_that("wildcard only #44", {
     expect_equal(ps[2], "c.mm")
     expect_equal(ps[3], "de")
     expect_equal(ps[4], "butthisispartoftheps.kawasaki.jp")
+})
+
+test_that("several wildcard matches in one call, #issue from review", {
+    # used to fail with "NAs are not allowed in subscripted assignments"
+    expect_equal(public_suffix(c("a.b.ck", "c.d.ck")), c("b.ck", "d.ck"))
+    expect_equal(
+        public_suffix(c("a.b.ck", "example.com", "c.d.ck")),
+        c("b.ck", "com", "d.ck")
+    )
+})
+
+test_that("hostnames and full URLs give the same suffix", {
+    urls <- c(
+        "http://a.b.ck", "https://subsub.sub.domain.co.uk",
+        "http://c.mm", "https://example.com"
+    )
+    expect_equal(public_suffix(urls), public_suffix(ada_get_hostname(urls)))
+})
+
+test_that("URLs with a path work directly", {
+    expect_equal(public_suffix("http://example.com/path/to/file"), "com")
+    expect_equal(
+        public_suffix("https://sub.domain.co.uk/a/b?q=1#f"), "co.uk"
+    )
+})
+
+test_that("public_suffix rejects non-character input", {
+    expect_error(public_suffix(123), "must be a character vector")
+})
+
+test_that("bare hostnames are accepted and normalised", {
+    expect_equal(public_suffix("github.com"), "com")
+    expect_equal(public_suffix("GitHub.COM"), "com")
+    expect_equal(public_suffix("sub.Example.CO.UK"), "co.uk")
+    expect_equal(public_suffix("xn--bcher-kva.de"), "de")
+})
+
+test_that("input that is neither a URL nor a bare hostname stays NA", {
+    # these must not be matched against the suffix trie verbatim, or a string
+    # merely ending in something suffix-like gets a bogus answer
+    junk <- c(
+        "evil.com/path.de", "foo/bar.com", "/path/to.de", "?q=x.com",
+        "not a url.de", "a b.com", "example.com:8080", "user@example.com"
+    )
+    expect_equal(public_suffix(junk), rep(NA_character_, length(junk)))
+    expect_equal(ada_get_domain(junk), rep(NA_character_, length(junk)))
+})
+
+test_that("URLs, hostnames and junk mix correctly in one call", {
+    x <- c("https://a.co.uk/p", "github.com", "evil.com/path.de", NA, "", "c.d.ck")
+    expect_equal(public_suffix(x), c("co.uk", "com", NA, NA, NA, "d.ck"))
+    expect_equal(ada_get_domain(x), c("a.co.uk", "github.com", NA, NA, NA, "c.d.ck"))
+})
+
+test_that("exception (!) rules override wildcard rules", {
+    # !city.kobe.jp cancels *.kobe.jp, so the suffix is the rule minus its
+    # leftmost label. These were dead entries in the trie before.
+    expect_equal(public_suffix("city.kobe.jp"), "kobe.jp")
+    expect_equal(public_suffix("www.city.kobe.jp"), "kobe.jp")
+    expect_equal(public_suffix("city.kawasaki.jp"), "kawasaki.jp")
+    expect_equal(public_suffix("www.city.kawasaki.jp"), "kawasaki.jp")
+    expect_equal(public_suffix("www.ck"), "ck")
+    # the wildcard still applies where no exception matches
+    expect_equal(public_suffix("foo.kobe.jp"), "foo.kobe.jp")
+    expect_equal(public_suffix("foo.ck"), "foo.ck")
+})
+
+test_that("every exception rule in the shipped list resolves", {
+    rules <- adaR_env$rules_all$exception
+    expect_gt(length(rules), 0)
+    expect_false(any(grepl("^!", rules)))
+    # each rule's own suffix is the rule minus its leftmost label
+    expect_equal(public_suffix(rules), sub("^[^.]+\\.", "", rules))
+    # and so is that of a host sitting under it
+    expect_equal(public_suffix(paste0("shop.", rules)), sub("^[^.]+\\.", "", rules))
+})
+
+test_that("exception rules mix correctly with other inputs", {
+    x <- c("http://www.city.kobe.jp/a", "foo.kobe.jp", "example.com", NA, "c.d.ck")
+    expect_equal(public_suffix(x), c("kobe.jp", "foo.kobe.jp", "com", NA, "d.ck"))
+})
+
+test_that("private suffixes are included by default, #65", {
+    x <- c("foo.github.io", "myblog.blogspot.com", "bucket.s3.amazonaws.com",
+           "app.herokuapp.com", "x.eu-west-1.compute.amazonaws.com")
+    expect_equal(
+        public_suffix(x),
+        c("github.io", "blogspot.com", "s3.amazonaws.com", "herokuapp.com",
+          "eu-west-1.compute.amazonaws.com")
+    )
+    expect_equal(
+        public_suffix(x, icann_only = TRUE),
+        c("io", "com", "com", "com", "com")
+    )
+})
+
+test_that("icann_only does not change purely ICANN lookups", {
+    x <- c("a.co.uk", "www.google.com", "city.kobe.jp", "foo.kobe.jp", "a.b.ck")
+    expect_equal(public_suffix(x), public_suffix(x, icann_only = TRUE))
+})
+
+test_that("icann_only keeps the corner cases intact", {
+    expect_equal(public_suffix(NULL, icann_only = TRUE), character(0))
+    expect_equal(public_suffix(NA, icann_only = TRUE), NA_character_)
+    expect_equal(public_suffix("", icann_only = TRUE), NA_character_)
+    expect_equal(public_suffix("evil.com/path.de", icann_only = TRUE), NA_character_)
 })

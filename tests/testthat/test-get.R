@@ -40,13 +40,23 @@ test_that("decode can pass", {
     expect_equal(ada_get_search("https://www.google.co.jp/search?q=\u30c9\u30a4\u30c4", decode = FALSE), "?q=%E3%83%89%E3%82%A4%E3%83%84")
 })
 
-test_that("get_domain works", {
-    urls <- paste0("http://sub.domain.", setdiff(psl$raw_list, psl$wildcard))
-    wild <- paste0("http://sub.domain.domain.", psl$wildcard)
-    dom1 <- ada_get_domain(urls)
-    dom2 <- ada_get_domain(wild)
-    expect_true(all(dom1 == paste0("domain.", setdiff(psl$raw_list, psl$wildcard))))
-    expect_true(all(dom2 == paste0("domain.domain.", psl$wildcard)))
+test_that("get_domain works over the whole ICANN list", {
+    fixed <- setdiff(psl$icann$raw_list, psl$icann$wildcard)
+    urls <- paste0("http://sub.domain.", fixed)
+    wild <- paste0("http://sub.domain.domain.", psl$icann$wildcard)
+    expect_equal(ada_get_domain(urls, icann_only = TRUE), paste0("domain.", fixed))
+    expect_equal(
+        ada_get_domain(wild, icann_only = TRUE),
+        paste0("domain.domain.", psl$icann$wildcard)
+    )
+})
+
+test_that("get_domain works over the whole private list", {
+    fixed <- setdiff(psl$private$raw_list, psl$private$wildcard)
+    urls <- paste0("http://sub.domain.", fixed)
+    wild <- paste0("http://sub.domain.domain.", psl$private$wildcard)
+    expect_equal(ada_get_domain(urls), paste0("domain.", fixed))
+    expect_equal(ada_get_domain(wild), paste0("domain.domain.", psl$private$wildcard))
 })
 
 corner_cases <- c(
@@ -142,4 +152,58 @@ test_that("href fix #66", {
     pathnames <- ada_get_pathname(examples, decode = FALSE)
     result_pathnames <- ada_set_pathname(examples, pathnames, decode = FALSE)
     expect_true(all(examples == result_pathnames))
+})
+
+test_that("ada_get_basename accepts decode, like the other getters", {
+    url <- "https://user_1:password_1@example.org:8080/dir/../api?q=1#frag"
+    expect_equal(ada_get_basename(url, decode = FALSE), "https://example.org")
+    expect_equal(ada_get_basename(url, decode = TRUE), "https://example.org")
+    expect_true("decode" %in% names(formals(ada_get_basename)))
+})
+
+test_that("ada_get_basename omits // for schemes without an authority", {
+    expect_equal(ada_get_basename("mailto:me@example.org"), "mailto:")
+    expect_equal(
+        ada_get_basename(c("https://x.org:8080/p", "noturl")),
+        c("https://x.org", NA_character_)
+    )
+})
+
+test_that("ada_get_domain accepts a bare domain and is idempotent, #36", {
+    url <- "https://github.com/schochastics/adaR/issues/36"
+    expect_equal(ada_get_domain(url), "github.com")
+    expect_equal(ada_get_domain(ada_get_domain(url)), "github.com")
+    # but a schemeless URL with a path stays NA (strict mode, see #36)
+    expect_equal(ada_get_domain("bit.ly/32G1ciy"), NA_character_)
+    expect_equal(ada_get_domain("notdomain/notpath"), NA_character_)
+})
+
+test_that("ada_get_domain honours exception rules", {
+    expect_equal(ada_get_domain("http://www.city.kobe.jp/page"), "city.kobe.jp")
+    expect_equal(ada_get_domain("http://www.city.kawasaki.jp/p"), "city.kawasaki.jp")
+    expect_equal(ada_get_domain("http://www.ck/x"), "www.ck")
+})
+
+test_that("a leading www. does not change the domain", {
+    expect_equal(ada_get_domain("https://www.google.com/x"), "google.com")
+    expect_equal(ada_get_domain("http://google.com"), "google.com")
+    expect_equal(ada_get_domain("https://www.sub.example.co.uk/a"), "example.co.uk")
+})
+
+test_that("ada_get_domain includes private suffixes by default, #65", {
+    x <- c("https://foo.github.io/p", "http://myblog.blogspot.com",
+           "https://www.google.com/x")
+    expect_equal(
+        ada_get_domain(x),
+        c("foo.github.io", "myblog.blogspot.com", "google.com")
+    )
+    expect_equal(
+        ada_get_domain(x, icann_only = TRUE),
+        c("github.io", "blogspot.com", "google.com")
+    )
+    # decode and icann_only are independent
+    expect_equal(
+        ada_get_domain("https://foo.github.io/p", decode = FALSE, icann_only = TRUE),
+        "github.io"
+    )
 })
